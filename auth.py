@@ -11,7 +11,7 @@ bcrypt = Bcrypt(app)
 talisman = Talisman(app)
 
 
-# Настройки базы данных
+# Database settings
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -50,7 +50,6 @@ def create_tables():
     db.create_all()
 
 
-# Форма создания нового пользователя
 @app.route("/signup", methods=["GET", "POST"])
 @talisman(force_https=True, content_security_policy=None)
 def signup():
@@ -82,8 +81,6 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
-        # Отправка ссылки для подтверждения регистрации на почту пользователя
-        # Здесь должен быть код отправки почты с уникальной ссылкой
         verify_link = "http://localhost:5000/verify/{}".format(quote(username))
         print(verify_link)
         return "Регистрация успешно завершена. Проверьте вашу почту для подтверждения регистрации."
