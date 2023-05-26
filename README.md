@@ -4,25 +4,25 @@ Flask User Authentication - это пример приложения Flask, ко
 
 ## Установка и настройка
 
-1. Клонируйте репозиторий:
+Клонируйте репозиторий:
 
     git clone https://github.com/igor20192/authentication_app.git
 
-2. Перейти в каталог проекта:
+Перейти в каталог проекта:
 
     cd authentication_app
 
-3. Создать виртуальную среду Python и активировать:
+Создать виртуальную среду Python и активировать:
 
     python3 -m venv env
 
     source env/bin/activate
 
-4. Установить зависимости проэкта:
+Установить зависимости проэкта:
 
     pip install -r requirements.txt
 
-5. Запустите приложение:
+Запустите приложение:
 
 Откройте веб-браузер и перейдите по адресу http://localhost:5000/signup
 
