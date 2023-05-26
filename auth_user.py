@@ -23,6 +23,12 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             with open("login.html", "rb") as file:
                 self.wfile.write(file.read())
+        elif self.path == "/forgot_password":
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            with open("forgot_password.html", "rb") as file:
+                self.wfile.write(file.read())
         elif self.path == "/logout":
             self.send_response(200)
             self.send_header("Content-type", "text/html")
