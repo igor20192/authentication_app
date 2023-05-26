@@ -24,6 +24,8 @@ Flask User Authentication - это пример приложения Flask, ко
 
 Запустите приложение:
 
+    python auth.py
+
 Откройте веб-браузер и перейдите по адресу http://localhost:5000/signup
 
 ## Функции
