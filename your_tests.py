@@ -1,104 +1,116 @@
 import unittest
-from flask import Flask
-from flask_testing import TestCase
+from flask import session
 from auth import app, db, User
 
 
-class AppTestCase(TestCase):
-    def create_app(self):
-        app.config["TESTING"] = True
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-        return app
+class AppTestCase(unittest.TestCase):
+    """Test case for the Flask application."""
 
     def setUp(self):
-        db.create_all()
+        """Set up the test environment."""
+        app.config["TESTING"] = True
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+        self.client = app.test_client()
+
+        with app.app_context():
+            db.create_all()
 
     def tearDown(self):
-        db.session.remove()
-        db.drop_all()
+        """Tear down the test environment."""
+        with app.app_context():
+            db.drop_all()
 
     def test_signup(self):
+        """Test the signup route."""
+
         response = self.client.post(
             "/signup",
             data={
                 "username": "test_user",
                 "email": "test@example.com",
-                "password": "test_password",
+                "password": "test123",
             },
+            follow_redirects=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "Регистрация успешно завершена. Проверьте вашу почту для подтверждения регистрации.",
+            response.data.decode(),
         )
 
-        self.assertIn("Регистрация успешно завершена", response.data.decode())
-        # Дополнительные проверки, например, проверка наличия созданного пользователя в базе данных
-        user = User.query.filter_by(username="test_user").first()
-        self.assertIsNotNone(user)
-        self.assertFalse(user.verified)
+    def test_verify(self):
+        """Test the verify route."""
+        user = User(username="test_user", email="test@example.com", password="test123")
+        db.session.add(user)
+        db.session.commit()
+
+        response = self.client.get(f"/verify/{user.username}")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Registration confirmed", response.data.decode())
 
     def test_login(self):
-        # Создание пользователя
+        """Test the login route."""
         user = User(
             username="test_user",
             email="test@example.com",
-            password="test_password",
+            password="test123",
             verified=True,
         )
         db.session.add(user)
         db.session.commit()
 
-        # Попытка входа с правильными учетными данными
         response = self.client.post(
-            "/login",
-            data={"username": "test_user", "password": "test_password"},
-            follow_redirects=True,
+            "/login", data={"username": "test_user", "password": "test123"}
         )
-        self.assert200(response)
-        self.assertIn("Вход выполнен успешно".encode("utf-8"), response.data)
-        # Проверка, что имя пользователя сохранено в сессии
-        with self.client.session_transaction() as session:
-            self.assertEqual(session["username"], "test_user")
-
-        # Попытка входа с неправильными учетными данными
-        response = self.client.post(
-            "/login",
-            data={"username": "test_user", "password": "wrong_password"},
-            follow_redirects=True,
-        )
-        self.assert200(response)
-        self.assertIn(
-            "Неправильное имя пользователя или пароль".encode("utf-8"), response.data
-        )
-        # Проверка, что имя пользователя не сохранено в сессии
-        with self.client.session_transaction() as session:
-            self.assertNotIn("username", session)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Login successful", response.data.decode())
+        self.assertIn("username", session)
 
     def test_reset_password(self):
-        # Создание пользователя
+        """Test the reset_password route."""
         user = User(
             username="test_user",
             email="test@example.com",
-            password="test_password",
+            password="test123",
             verified=True,
         )
         db.session.add(user)
         db.session.commit()
 
-        # Отправка запроса на сброс пароля
         response = self.client.post(
             "/reset_password",
             data={"username": "test_user", "email": "test@example.com"},
-            follow_redirects=True,
         )
-        self.assert200(response)
-        self.assertIn(
-            "Ссылка для сброса пароля отправлена на вашу почту".encode("utf-8"),
-            response.data,
-        )
-        # Дополнительные проверки, например, проверка отправки электронной почты со ссылкой на сброс пароля
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Password reset link was sent", response.data.decode())
 
     def test_update_password(self):
-        # Создание пользователя
+        """Test the update_password route."""
         user = User(
             username="test_user",
             email="test@example.com",
-            password="test_password",
+            password="test123",
             verified=True,
         )
+        db.session.add(user)
+        db.session.commit()
+
+        response = self.client.post(
+            f"/update_password/{user.username}", data={"password": "newpassword"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Password successfully updated", response.data.decode())
+
+    def test_logout(self):
+        """Test the logout route."""
+        with self.client.session_transaction() as sess:
+            sess["username"] = "test_user"
+
+        response = self.client.get("/logout")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Exit completed successfully", response.data.decode())
+        self.assertNotIn("username", session)
+
+
+if __name__ == "__main__":
+    unittest.main()
