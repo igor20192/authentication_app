@@ -3,6 +3,9 @@ import socketserver
 import urllib.parse
 import os
 import hashlib
+from otpauth import TOTP
+import base64
+import ssl
 
 PORT = 8000
 
@@ -44,6 +47,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             username = form_data["username"][0]
             email = form_data["email"][0]
             password = form_data["password"][0]
+            twofa_secret = base64.b32encode(os.urandom(10)).decode()
 
             # Проверка сложности пароля
             if len(password) < 8:
@@ -72,12 +76,20 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             users[username] = {
                 "password_hash": password_hash,
                 "salt": salt,
+                "twofa_secret": twofa_secret,
             }
 
+            tw_secret = users[username]["twofa_secret"]
+            response_message = (
+                f"User successfully registered. Your 2FA secret: {tw_secret}"
+            )
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
-            self.wfile.write("User successfully registered.".encode("utf-8"))
+
+            # Отправка 2FA ключа на страницу
+
+            self.wfile.write(response_message.encode("utf-8"))
 
         elif self.path == "/forgot_password":
             content_length = int(self.headers["Content-Length"])
@@ -117,6 +129,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
 
             username = form_data["username"][0]
             password = form_data["password"][0]
+            twofa_code = form_data["twofa_code"][0]
 
             if username not in users:
                 self.send_response(200)
@@ -139,6 +152,17 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write("Wrong password.".encode("utf-8"))
                 return
 
+            # Проверка правильности 2FA-кода
+            stored_twofa_secret = users[username]["twofa_secret"]
+            # totp = TOTP(stored_twofa_secret)
+            # if not totp.verify(twofa_code):
+            if stored_twofa_secret != twofa_code:
+                self.send_response(200)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                self.wfile.write("Wrong 2FA code.".encode("utf-8"))
+                return
+
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
@@ -153,6 +177,11 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             )
 
 
+# Создание контекста SSL/TLS
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+context.load_cert_chain(certfile="server.crt", keyfile="server.key")
+
 with socketserver.TCPServer(("", PORT), RequestHandler) as httpd:
+    httpd.socket = context.wrap_socket(httpd.socket)  # Применение контекста SSL/TLS
     print(f"Serving at port {PORT}")
     httpd.serve_forever()
