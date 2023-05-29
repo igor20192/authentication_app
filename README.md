@@ -60,22 +60,24 @@ In the code, the TLS protocol is implemented using the ssl module in Python. Her
 
    ```shell
    # Create an SSL/TLS context
+
    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
    context.load_cert_chain(certfile="server.crt", keyfile="server.key")
 
-This code creates an SSLContext object using the ssl.PROTOCOL_TLS_SERVER protocol. The certificate (server.crt) and the corresponding key (server.key) are then loaded using the load_cert_chain method to ensure a secure connection.
-2. Applying an SSL/TLS context to a socket:
+2. This code creates an SSLContext object using the ssl.PROTOCOL_TLS_SERVER protocol. The certificate (server.crt) and the corresponding key (server.key) are then loaded using the load_cert_chain method to ensure a secure connection.
+
+3. Applying an SSL/TLS context to a socket:
 
    ```shell
    httpd.socket = context.wrap_socket(httpd.socket)
 
-This code applies the SSL/TLS context to the server's socket httpd.socket. Now the server will accept encrypted connections using the TLS protocol.
+4. This code applies the SSL/TLS context to the server's socket httpd.socket. Now the server will accept encrypted connections using the TLS protocol.
 Server start:
 
    ```shell
    httpd.serve_forever()
 
-After applying the SSL/TLS context to the socket, the server starts up and starts listening for incoming requests on the specified port. All connections will be protected by the TLS protocol.
+5. After applying the SSL/TLS context to the socket, the server starts up and starts listening for incoming requests on the specified port. All connections will be protected by the TLS protocol.
 
 Note: The TLS protocol requires a valid
 certificate, which you must provide in the form of server.crt files
