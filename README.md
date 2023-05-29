@@ -224,6 +224,26 @@ certificate and key, or generate them with tools like OpenSSL.
 
    So after submitting a form with a username, the server checks for the existence of the user, generates a new password, hashes it and updates the corresponding data in the database, and then sends the new password in the response. The user can use this new password to log in to the system.
 
+5. In the presented code, the logout process (logout) is implemented in the do_GET method for the /logout path. Here is a general overview of how a user logs out:
+
+   - Processing a GET request: When a user navigates to the /logout path, the server processes the GET request and executes the corresponding code in the do_GET method.
+
+   - Response Shaping: The server sends a response with status code 200 and content type text/html. It then sends the message "You have successfully logged out." in response body:
+
+      ```shell
+      self.send_response(200)
+      self.send_header("Content-type", "text/html")
+      self.end_headers()
+      self.wfile.write("You have successfully logged out.".encode("utf-8"))
+
+   - Logout: Upon receiving this response, the client browser displays
+   the message "You have successfully logged out." user. Additional
+   actions such as clearing a user's session or deleting temporary
+   data can be performed as needed.
+
+   - Thus, to log out, the user must navigate to the /logout path. The server will send a response indicating successful logout and the user will be disconnected from the current session.
+
+
 
 
 
