@@ -138,6 +138,102 @@ certificate and key, or generate them with tools like OpenSSL.
 
    Thus, when a user registers, the server validates the form data, performs several checks (including the password policy), hashes the password, and stores information about the user.
 
+3. In the presented code, the user login (login) process is implemented in the do_POST method for the /login path. Here is a general overview of how a user logs in:
+
+   - Retrieving form data: In the do_POST method, the server receives a POST request, extracts the data from the request body, and parses it using the urllib.parse module. The form data, including username and password, is retrieved as follows:
+
+      ```shell
+      post_data = self.rfile.read(content_length).decode("utf-8")
+      form_data = urllib.parse.parse_qs(post_data)
+      username = form_data["username"][0]
+      password = form_data["password"][0]
+
+   - Checking if the user exists: The server then checks if the user with the given name exists in the users database. If a user with the specified name does not exist, the server sends a response with the message "User is not found.".
+
+   - Password validation: If the user exists, the server retrieves the password hash and salt from the database for the specified user. The server then hashes the entered password using the same salt and hashing algorithm, and then compares the resulting hash with the hash stored in the database:
+
+      ```shell
+      stored_password_hash = users[username]["password_hash"]
+      stored_salt = users[username]["salt"]
+      password_hash = hashlib.pbkdf2_hmac(
+          "sha256", password.encode(), stored_salt, 100000
+      )
+
+      if password_hash != stored_password_hash:
+          # Неправильный пароль
+          self.send_response(200)
+          self.send_header("Content-type", "text/html")
+          self.end_headers()
+          self.wfile.write("Wrong password.".encode("utf-8"))
+          return
+
+   If the hashes match, the server continues the login process.
+
+   - 2FA secret key generation and storage: Upon successful password verification, the server generates a random two-factor authentication (2FA) secret key using the os.urandom function and encodes it in Base32 format. The server then stores the private key in the database for the corresponding user:
+
+      ```shell
+      twofa_secret = base64.b32encode(os.urandom(10)).decode()
+      users[username]["twofa_secret"] = twofa_secret
+
+   - Printing the secret key and sending a response: The server prints the generated 2FA secret key to the console for further use. The server then opens the secret_key.html file, replaces the {username} placeholder with the actual username, and sends the contents of the file in the response:
+
+      ```shell
+      with open("secret_key.html", "rb") as file:
+         content = file.read().decode("utf-8")
+      content = content.replace("{username}", username)
+      self.send_response(200)
+      self.send_header("Content-type", "text/html")
+      self.end_headers()
+      self.wfile.write(content.encode("utf-8"))
+
+   So after submitting a form with a username and password, the server checks for the existence of the user, verifies that the password is correct, generates and stores the 2FA secret key, and then sends the secret key page in the response.
+
+4. In the presented code, the password change process is implemented in the do_POST method for the /forgot_password path. Here is a general overview of how a user password change occurs:
+    
+   - Retrieving form data: In the do_POST method, the server receives a POST request, extracts the data from the request body, and parses it using the urllib.parse module. The form data, including the username, is retrieved as follows:
+
+      ```shell
+      post_data = self.rfile.read(content_length).decode("utf-8")
+      form_data = urllib.parse.parse_qs(post_data)
+      username = form_data["username"][0]
+
+   - Checking if the user exists: The server then checks if the user with the given name exists in the users database. If a user with the specified name does not exist, the server sends a response with the message "User is not found.".
+
+   - New password generation: If the user exists, the server generates a new random password using the os.urandom function and converts it to a hexadecimal representation:
+
+      ```shell
+      new_password = os.urandom(8).hex()
+
+   - Hashing the new password: The server then generates a new salt, hashes the new password using the salt and the PBKDF2 hashing algorithm, and then updates the hash and salt in the database for the specified user:
+
+      ```shell
+      salt = os.urandom(16)
+      password_hash = hashlib.pbkdf2_hmac(
+          "sha256", new_password.encode(), salt, 100000
+      )
+      users[username]["password_hash"] = password_hash
+      users[username]["salt"] = salt
+
+   - Sending a new password to the user: The server sends a response with the newly generated password in the format "Your new password: {new_password}". The client browser receives this response and can display the new password to the user.
+
+      ```shell
+      self.send_response(200)
+      self.send_header("Content-type", "text/html")
+      self.end_headers()
+      self.wfile.write(f"your new password: {new_password}".encode("utf-8"))
+
+   So after submitting a form with a username, the server checks for the existence of the user, generates a new password, hashes it and updates the corresponding data in the database, and then sends the new password in the response. The user can use this new password to log in to the system.
+
+
+
+
+
+   
+
+
+
+
+
 
 
 
