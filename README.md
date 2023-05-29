@@ -84,40 +84,59 @@ certificate, which you must provide in the form of server.crt files
 certificate and server.key key. Make sure you have the correct
 certificate and key, or generate them with tools like OpenSSL.
 
-2. To register a user, use the form template registraton.html
+2. In the presented code, user registration occurs as follows:
 
-3. There are several checks in the code that can be picked up by the password security settings. These are the checks:
+   - When the client sends a POST request along the "/register" path (in the do_POST method), the server requests the registration form obtained from the request body:
 
-   - Length:
+      ```shell
+      content_length = int(self.headers["Content-Length"])
+      post_data = self.rfile.read(content_length).decode("utf-8")
+      form_data = urllib.parse.parse_qs(post_data)
+
+   - Then data is retrieved from forms such as username, email and password:
+
+      ```shell
+      username = form_data["username"][0]
+      email = form_data["email"][0]
+      password = form_data["password"][0]
+
+   - After that, a check is made for the minimum password length:
 
       ```shell
       if len(password) < 8:
-         self.send_response(200)
-         self.send_header("Content-type", "text/html")
-         self.end_headers()
-         self.wfile.write(
-        "The password must contain at least 8 characters.".encode("utf-8")
-      )
-      return
+         # Return an error message if the password does not match minimum length
 
-   This check ensures that the password must contain at least 8 characters. If the password is shorter than 8 characters, a payment message is returned.
-
-   - Username Uniqueness:
+   - Next, checks are performed for the uniqueness of the username and email address:
 
       ```shell
       if username in users:
-         # User already exists
-         self.send_response(200)
-         self.send_header("Content-type", "text/html")
-         self.end_headers()
-         self.wfile.write("The user already exists.".encode("utf-8"))
-      return
+         # An error message is returned if the username is already exists
 
-   This snippet checks that the username must be unique. If the username already exists in the users dictionary, an error will be returned.
+      if email in (users[username]["email"] for username in users):
+         # An error message is returned if the email address is already exists
 
+   - If all checks are successful, the password is hashed and stored in the users dictionary along with other user data:
 
+      ```shell
+      salt = os.urandom(16)
+      password_hash = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 100000)
 
+      users[username] = {
+      "password_hash": password_hash,
+      "salt": salt,
+      "email": email,
+      }
 
+   - At the end, a message about successful registration is returned:
+
+      ```shell
+      response_message = "User successfully registered."
+      self.send_response(200)
+      self.send_header("Content-type", "text/html")
+      self.end_headers()
+      self.wfile.write(response_message.encode("utf-8"))
+
+   Thus, when a user registers, the server validates the form data, performs several checks (including the password policy), hashes the password, and stores information about the user.
 
 
 
