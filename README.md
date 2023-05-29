@@ -84,7 +84,41 @@ certificate, which you must provide in the form of server.crt files
 certificate and server.key key. Make sure you have the correct
 certificate and key, or generate them with tools like OpenSSL.
 
-##
+2. To register a user, use the form template registraton.html
+
+3. There are several checks in the code that can be picked up by the password security settings. These are the checks:
+
+   - Length:
+
+      ```shell
+      if len(password) < 8:
+         self.send_response(200)
+         self.send_header("Content-type", "text/html")
+         self.end_headers()
+         self.wfile.write(
+        "The password must contain at least 8 characters.".encode("utf-8")
+      )
+      return
+
+   This check ensures that the password must contain at least 8 characters. If the password is shorter than 8 characters, a payment message is returned.
+
+   - Username Uniqueness:
+
+      ```shell
+      if username in users:
+         # User already exists
+         self.send_response(200)
+         self.send_header("Content-type", "text/html")
+         self.end_headers()
+         self.wfile.write("The user already exists.".encode("utf-8"))
+      return
+
+   This snippet checks that the username must be unique. If the username already exists in the users dictionary, an error will be returned.
+
+
+
+
+
 
 
 
