@@ -168,6 +168,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
 
             twofa_secret = base64.b32encode(os.urandom(10)).decode()
             users[username]["twofa_secret"] = twofa_secret
+            # Terminal output twofa_secret
             print(twofa_secret)
             # Load the secret_key.html template
             with open("secret_key.html", "rb") as file:
