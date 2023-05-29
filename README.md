@@ -29,7 +29,27 @@ This is a simple authentication server written in Python using the `http.server`
 
 2. Generate SSL/TLS certificates (`server.crt` and `server.key`) for secure communication (optional but recommended).
 3. Open a terminal or command prompt and navigate to the project directory.
-4. Run the following command to start the authentication server:
+
+   ```shell
+   cd authentication_app
+
+4. Check in and activate the Python virtual environment
+
+   ```shell
+   python3 -m venv env
+   . env/bin/activate
+
+5. Run the following command to start the authentication server:
 
    ```shell
    python auth_user.py
+
+6. The server will start listening on the specified port (default: 8000) and serve the required HTML pages.
+7. Access the server using a web browser at https://localhost:<PORT>, where <PORT> is the port number specified in the code.
+8. Follow the on-screen instructions to register, log in, and perform other actions.
+9. User registration go : https://localhost:8000
+   Login : https://localhost:8000/login
+   Change Password : https://localhost:8000/forgot_password
+   Log out : https://localhost:8000:logout
+
+
