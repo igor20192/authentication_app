@@ -54,37 +54,37 @@ This is a simple authentication server written in Python using the `http.server`
 
 ## Implementation Description
 
-In the code, the TLS protocol is implemented using the ssl module in Python. Here's how it goes:
+1. In the code, the TLS protocol is implemented using the ssl module in Python. Here's how it goes:
 
-1. Create an SSL/TLS context:
+   - Create an SSL/TLS context:
 
-   ```shell
-   # Create an SSL/TLS context
+      ```shell
+      # Create an SSL/TLS context
 
-   context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-   context.load_cert_chain(certfile="server.crt", keyfile="server.key")
+      context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+      context.load_cert_chain(certfile="server.crt", keyfile="server.key")
 
-2. This code creates an SSLContext object using the ssl.PROTOCOL_TLS_SERVER protocol. The certificate (server.crt) and the corresponding key (server.key) are then loaded using the load_cert_chain method to ensure a secure connection.
+   This code creates an SSLContext object using the ssl.PROTOCOL_TLS_SERVER protocol. The certificate (server.crt) and the corresponding key (server.key) are then loaded using the load_cert_chain method to ensure a secure connection.
 
-3. Applying an SSL/TLS context to a socket:
+   - Applying an SSL/TLS context to a socket:
 
-   ```shell
-   httpd.socket = context.wrap_socket(httpd.socket)
+      ```shell
+      httpd.socket = context.wrap_socket(httpd.socket)
 
-4. This code applies the SSL/TLS context to the server's socket httpd.socket. Now the server will accept encrypted connections using the TLS protocol.
-Server start:
+   This code applies the SSL/TLS context to the server's socket httpd.socket. Now the server will accept encrypted connections using the TLS protocol.
+   - Server start:
 
-   ```shell
-   httpd.serve_forever()
+      ```shell
+      httpd.serve_forever()
 
-5. After applying the SSL/TLS context to the socket, the server starts up and starts listening for incoming requests on the specified port. All connections will be protected by the TLS protocol.
+   - After applying the SSL/TLS context to the socket, the server starts up and starts listening for incoming requests on the specified port. All connections will be protected by the TLS protocol.
 
 Note: The TLS protocol requires a valid
 certificate, which you must provide in the form of server.crt files
 certificate and server.key key. Make sure you have the correct
 certificate and key, or generate them with tools like OpenSSL.
 
-
+##
 
 
 
