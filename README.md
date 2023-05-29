@@ -23,6 +23,10 @@ This is a simple authentication server written in Python using the `http.server`
 ## Usage
 
 1. Clone the repository or download the code files.
+
+   ```shell
+   git clone https://github.com/igor20192/authentication_app.git
+
 2. Generate SSL/TLS certificates (`server.crt` and `server.key`) for secure communication (optional but recommended).
 3. Open a terminal or command prompt and navigate to the project directory.
 4. Run the following command to start the authentication server:
