@@ -50,7 +50,7 @@ This is a simple authentication server written in Python using the `http.server`
 9. User registration go : https://localhost:8000
    Login : https://localhost:8000/login
    Change Password : https://localhost:8000/forgot_password
-   Log out : https://localhost:8000:logout
+   Log out : https://localhost:8000/logout
 
 ## Implementation Description
 
